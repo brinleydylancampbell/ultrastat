@@ -319,21 +319,49 @@ import { Zap, Battery, Wind, ShieldCheck } from 'lucide-react';
 
 | Page | Route | Purpose |
 |------|-------|---------|
-| Home | `/` | Hero + Features + Social proof + CTA |
+| Home | `/` | Hero + Features + ROI Calculator + Social proof + CTA |
 | Contact / Demo | `/contact` | Lead capture form |
+| Become a Distributor | `/distributors` | Distributor/importer enquiry + territory map |
 | Downloads | `/downloads` | TDS PDF + future assets |
-| Knowledge Base | `/knowledge-base` | FAQ / how-to (currently empty) |
+| Knowledge Base | `/knowledge-base` | FAQ / how-to articles |
+| Squeeze pages | `/demo/[slug]` | Ad-matched landing pages (no nav/footer) |
+| Privacy Policy | `/privacy` | GDPR compliance stub |
 
 ### Home Page Section Order
 
 ```
-1. <Nav>          — sticky dark nav
-2. <Hero>         — full-bleed photo + headline + dual CTA
-3. <Features>     — 4 benefit cards (bg-slate-50)
-4. <HowItWorks>   — 3-step process (optional)
-5. <Trust>        — ATEX badge + "Essential for the Bodyshop" + distributor note
-6. <CTA Banner>   — dark bg, orange CTA, single-minded conversion
-7. <Footer>       — dark nav repeat
+1. <Nav>              — sticky dark nav
+2. <Hero>             — full-bleed video/photo + headline + dual CTA
+3. <Features>         — 4 benefit cards (bg-slate-50)
+4. <VideoProof>       — Instagram video embed + "See it in action" heading
+5. <ROICalculator>    — 3 sliders → savings output → CTA (bg-slate-50)
+6. <Testimonials>     — 2–3 quotes with name/role/location
+7. <Trust>            — ATEX/CE/UKCA/FCC badges + certifications
+8. <CTA Banner>       — dark bg, orange CTA, single-minded conversion
+9. <Footer>           — dark nav repeat
+```
+
+### Squeeze Page Section Order (`/demo/[slug]`)
+
+```
+1. <SqueezNav>        — logo only (links to homepage), no nav links
+2. <SqueezeHero>      — headline (mirrors ad copy) + subheadline + anchor CTA button
+3. <SqueezeVideo>     — autoplay muted MP4 loop (self-hosted) or Instagram embed
+4. <SqueezeBenefits>  — 3 outcome bullets
+5. <SqueezeTestimonial> — 1–2 quotes
+6. <SqueezeForm>      — full demo request form (id="demo-form", anchor target)
+7. <SqueezeLegal>     — Privacy Policy link + © + certification badges
+```
+
+### Distributor Page Section Order (`/distributors`)
+
+```
+1. <Nav>                — standard sticky nav
+2. <DistributorHero>    — headline: "Become an ULTRASTAT Distributor"
+3. <DistributorPitch>   — proven UK traction, demo-led model, marketing support
+4. <DistributorMap>     — interactive territory map (Phase 1: Leaflet.js + hardcoded JSON)
+5. <DistributorForm>    — enquiry form (country/region auto-populated from map click)
+6. <Footer>
 ```
 
 ---
@@ -343,33 +371,243 @@ import { Zap, Battery, Wind, ShieldCheck } from 'lucide-react';
 ```
 ultrastat/
 ├── app/
-│   ├── layout.tsx          # Font, metadata, globals
-│   ├── page.tsx            # Home
-│   ├── contact/page.tsx    # Contact form
-│   ├── downloads/page.tsx  # TDS download
-│   ├── knowledge-base/page.tsx
-│   └── globals.css         # @theme tokens, base styles
+│   ├── layout.tsx                    # Font, metadata, globals, cookie consent
+│   ├── page.tsx                      # Home
+│   ├── contact/page.tsx              # Contact / demo request form
+│   ├── distributors/page.tsx         # Become a Distributor + map
+│   ├── downloads/page.tsx            # TDS PDF + future assets
+│   ├── knowledge-base/
+│   │   ├── page.tsx                  # Article index
+│   │   └── [slug]/page.tsx           # Individual FAQ articles
+│   ├── demo/
+│   │   └── [slug]/page.tsx           # Squeeze pages (no nav/footer)
+│   ├── privacy/page.tsx              # Privacy Policy (GDPR stub)
+│   └── globals.css                   # @theme tokens, base styles
 ├── components/
 │   ├── Nav.tsx
 │   ├── Hero.tsx
 │   ├── FeatureCards.tsx
+│   ├── VideoSection.tsx              # Instagram embed or self-hosted MP4
+│   ├── ROICalculator.tsx             # 3-slider savings calculator
+│   ├── Testimonials.tsx
 │   ├── TrustBar.tsx
 │   ├── CTABanner.tsx
 │   ├── ContactForm.tsx
+│   ├── DistributorMap.tsx            # Leaflet.js map (Phase 1)
+│   ├── DistributorForm.tsx
+│   ├── CookieBanner.tsx              # GDPR consent — controls Pixel + GA4 injection
 │   ├── Footer.tsx
+│   ├── squeeze/
+│   │   ├── SqueezeNav.tsx            # Logo-only nav for /demo/* pages
+│   │   ├── SqueezeHero.tsx
+│   │   ├── SqueezeBenefits.tsx
+│   │   ├── SqueezeTestimonial.tsx
+│   │   ├── SqueezeForm.tsx           # UTM capture + Supabase submit
+│   │   └── SqueezeLegal.tsx
 │   └── ui/
 │       ├── Button.tsx
 │       ├── Input.tsx
-│       └── Badge.tsx
-├── public/
-│   └── logo.png            # ULTRASTAT logo (white variant needed)
-└── lib/
-    └── supabase.ts         # Supabase client (for contact form)
+│       ├── Badge.tsx
+│       └── SchemaScript.tsx          # Reusable JSON-LD injector
+├── lib/
+│   ├── supabase.ts                   # Supabase client
+│   ├── squeeze-pages.ts              # Phase 1: SqueezePage config array
+│   └── distributors.ts              # Phase 1: Distributor JSON (lat/lng, territory)
+└── public/
+    ├── logo.png                      # White variant needed for dark bg
+    └── videos/
+        └── hero-demo.mp4             # Self-hosted, compressed <5MB (HandBrake)
 ```
 
 ---
 
-## 12. Accessibility Checklist
+---
+
+## 12. New Component Specs
+
+### 12.1 Cookie Consent Banner
+
+- **Position:** Fixed bottom, full width, `z-index: 60` (above sticky nav)
+- **Background:** `#1A1A2E` (navy — matches nav, authoritative)
+- **Text:** `text-white/80 text-sm` — short copy: "We use cookies to measure ad performance and improve your experience."
+- **Buttons:** "Accept" (primary orange, small) + "Decline" (ghost, small) — side by side, right-aligned
+- **Behaviour:** Stores `cookie_consent: "accepted" | "declined"` in `localStorage`. Never shows again after choice. Scripts only load on "accepted".
+- **IDs:** `NEXT_PUBLIC_GA4_ID` and `NEXT_PUBLIC_META_PIXEL_ID` in `.env.local` — leave blank until available, scripts simply won't fire.
+- **Links:** "Privacy Policy" text link in the copy → `/privacy`
+
+### 12.2 Video Section
+
+**Self-hosted hero video (for Hero or squeeze pages):**
+```html
+<video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
+  <source src="/videos/hero-demo.mp4" type="video/mp4" />
+</video>
+```
+- Add dark overlay on top (`bg-black/55`) — same as hero photo treatment
+- File: compress with HandBrake, target <5MB, 1080p max, H.264
+
+**Instagram embed section (homepage social proof):**
+- Pick 2–3 posts from @ultrastatgun
+- Use native Instagram embed: `<blockquote class="instagram-media">` + `//www.instagram.com/embed.js`
+- No API key required — copy embed code from post
+- Lazy-load the embed script (`loading="lazy"` on iframe) — below the fold so no performance impact
+- Section heading: "See it in action" — `text-h2`, centred, `bg-white` section
+
+### 12.3 ROI Calculator
+
+- **Section background:** `bg-slate-50`
+- **Container:** `max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8`
+- **Heading:** "How much is static costing your bodyshop?" — `text-h2`
+- **Subheading:** "Adjust the sliders to see your potential savings." — `text-body text-muted`
+
+**Three sliders:**
+| Label | Range | Default | Unit |
+|---|---|---|---|
+| Cars painted per week | 1–50 | 10 | cars |
+| Extra rework per car (dust/static) | 5–120 | 30 | minutes |
+| Hourly charge-out rate | £20–£150 | £60 | £/hr |
+
+**Output card (updates in real time):**
+- `bg-[#1A1A2E] rounded-xl p-6 mt-6`
+- "ULTRASTAT could save you:" — `text-white/70 text-sm uppercase tracking-wider`
+- Savings figure: `text-orange-400 text-5xl font-extrabold` — the big number
+- "per year" suffix — `text-white/60 text-lg`
+- Below: "Hours saved per week: X hrs" — secondary stat in `text-white/60 text-sm`
+
+**CTA below the card:**
+- "Ready to test it for free? Your local distributor can arrange a demo."
+- Primary orange button: "Request my free demo"
+
+**Calculation:**
+```typescript
+const hoursLostPerWeek = (cars * reworkMinutes) / 60
+const costPerWeek = hoursLostPerWeek * hourlyRate
+const savingsPerYear = Math.round(costPerWeek * 52)
+```
+
+### 12.4 Distributor Map
+
+**Phase 1 — Leaflet.js (launch):**
+- `npm install leaflet react-leaflet`
+- Tile style: CartoDB Dark Matter tiles — matches navy brand palette
+- Pins: orange (`#F97316`) custom SVG marker — 24px
+- On pin click: popup card with distributor name, territory, optional "Visit site" link
+- Map shows UK + Europe zoom level by default
+- Deliberate gaps in coverage = opportunity signal for prospective distributors
+- Section below map: "Interested in your region? Get in touch." → anchor to DistributorForm
+
+**Data shape (Phase 1 — hardcoded in `lib/distributors.ts`):**
+```typescript
+interface Distributor {
+  id: string
+  name: string
+  territory: string      // "South East England"
+  country: string        // "UK"
+  lat: number
+  lng: number
+  contactUrl?: string
+  active: boolean
+}
+```
+
+**Phase 2 — Supabase-backed:**
+- Move array to `distributors` table
+- `generateStaticParams` fetches at build time → no runtime latency
+- Add country filter dropdown above the map
+- "Areas seeking distributors" section: explicit list of countries with no coverage
+
+**Phase 3 — Full platform:**
+- Territory polygon overlays
+- Admin UI for client to self-manage
+- Lead routing: form country field → auto-routes to matched distributor email
+
+### 12.5 Squeeze Page System
+
+**Config (`lib/squeeze-pages.ts`):**
+```typescript
+interface SqueezePage {
+  slug: string
+  headline: string          // Must mirror the Meta ad copy exactly
+  subheadline: string
+  videoSrc: string          // '/videos/demo-bodyshop.mp4' or Instagram embed URL
+  benefits: [string, string, string]
+  testimonial: {
+    quote: string
+    name: string
+    role: string            // "Bodyshop Owner"
+    location: string        // "East Sussex"
+  }
+  formHeading: string
+  ctaLabel: string
+  metaTitle: string
+  metaDescription: string
+  ogImage: string
+}
+```
+
+**UTM capture (runs on page load, transparent to user):**
+```typescript
+// Reads from URL: ?utm_source=meta&utm_medium=cpc&utm_campaign=bodyshop-uk
+// Stored in sessionStorage, appended to Supabase form submission
+const utmFields = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term']
+```
+
+**Key squeeze page rules:**
+- No global `<Nav>` — use `<SqueezeNav>` (logo only)
+- No global `<Footer>` — use `<SqueezeLegal>` (Privacy + © + cert badges)
+- Each page has unique `metaTitle` and `ogImage` — must match the ad creative
+- Form anchor: CTA button scrolls to `#demo-form` (not a new page)
+- One action only — remove all other exit paths
+
+### 12.6 Structured Data (JSON-LD)
+
+**Reusable component `ui/SchemaScript.tsx`:**
+```tsx
+export function SchemaScript({ data }: { data: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  )
+}
+```
+
+**Organization schema (global — `app/layout.tsx`):**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ULTRASTAT",
+  "url": "https://ultrastat.co.uk",
+  "logo": "https://ultrastat.co.uk/logo.png",
+  "sameAs": ["https://www.instagram.com/ultrastatgun/"]
+}
+```
+
+**Product schema (homepage):**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "ULTRASTAT Anti-Static Gun",
+  "description": "Cordless, lightweight anti-static gun for bodyshop painters. ATEX certified for spray booth use.",
+  "brand": { "@type": "Brand", "name": "ULTRASTAT" },
+  "manufacturer": { "@type": "Organization", "name": "Lean Air" }
+}
+```
+
+**FAQPage schema (knowledge-base articles):**
+- Each `[slug]` page generates its own `FAQPage` schema from its Q&A content
+- Enables Google "People also ask" / expandable snippet — strongest organic CTR driver
+
+**BreadcrumbList (all inner pages):**
+- `Home > Page Name` or `Home > Knowledge Base > Article`
+- Set per-page via `SchemaScript`
+
+---
+
+## 14. Accessibility Checklist
 
 - [ ] Color contrast: all text/background combinations meet 4.5:1 minimum
 - [ ] Focus rings: visible on all interactive elements (orange ring matches brand)
@@ -384,7 +622,7 @@ ultrastat/
 
 ---
 
-## 13. Pre-Delivery Checklist
+## 15. Pre-Delivery Checklist
 
 ### Visual
 - [ ] No emojis used as icons (Lucide SVGs only)

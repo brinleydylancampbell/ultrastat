@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #1A1A2E;
+  --color-brand-orange: #F97316;
+  --color-brand-orange-hover: #EA6C00;
+  --font-sans: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer utilities {
+  .shadow-cta {
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+  }
+  .shadow-cta-lg {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.40);
+  }
+  .fade-up {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: none;
+  }
+}
