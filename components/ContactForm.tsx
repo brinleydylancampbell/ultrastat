@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getSupabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 interface FormData {
   name: string
@@ -16,15 +16,8 @@ const empty: FormData = { name: '', company: '', postcode: '', email: '', phone:
 
 function getUtmParams(): Record<string, string> {
   if (typeof window === 'undefined') return {}
-  const params = new URLSearchParams(window.location.search)
   const stored = sessionStorage.getItem('utm_params')
-  const fromSession = stored ? JSON.parse(stored) : {}
-  const fromUrl: Record<string, string> = {}
-  ;['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => {
-    const v = params.get(k)
-    if (v) fromUrl[k] = v
-  })
-  return { ...fromSession, ...fromUrl }
+  return stored ? JSON.parse(stored) : {}
 }
 
 export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
@@ -62,18 +55,20 @@ export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
       ...form,
       ...getUtmParams(),
       squeeze_page: squeezePage ?? null,
-      submitted_at: new Date().toISOString(),
     }
 
     try {
-      const { error } = await getSupabase().from('demo_requests').insert(payload)
-      if (error) throw error
+      const res = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
 
-      if (typeof window !== 'undefined') {
-        const w = window as Window & { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
-        w.gtag?.('event', 'demo_request_submitted')
-        w.fbq?.('track', 'Lead')
-      }
+      if (!res.ok) throw new Error('Failed')
+
+      const w = window as Window & { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
+      w.gtag?.('event', 'demo_request_submitted')
+      w.fbq?.('track', 'Lead')
 
       setStatus('success')
       setForm(empty)
@@ -82,12 +77,7 @@ export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
     }
   }
 
-  const field = (
-    id: keyof FormData,
-    label: string,
-    type = 'text',
-    placeholder = ''
-  ) => (
+  const field = (id: keyof FormData, label: string, type = 'text', placeholder = '') => (
     <div>
       <label htmlFor={id} className="block text-sm font-semibold text-slate-700 mb-1.5">
         {label}
@@ -121,7 +111,7 @@ export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
         </div>
         <h3 className="text-slate-900 font-bold text-xl mb-2">Demo request received</h3>
         <p className="text-slate-600 text-sm leading-relaxed">
-          We&apos;ll be in touch shortly to arrange your free demo through your preferred distributor. Keep an eye on your inbox.
+          We&apos;ll be in touch shortly to arrange your free demo through your preferred distributor.
         </p>
       </div>
     )
@@ -134,12 +124,8 @@ export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
         {field('company', 'Company name', 'text', 'Bodyshop or business name')}
         {field('postcode', 'Postcode', 'text', 'e.g. TN22 1AA')}
         {field('phone', 'Phone number', 'tel', '+44 …')}
-        <div className="sm:col-span-2">
-          {field('email', 'Email address', 'email', 'you@example.com')}
-        </div>
-        <div className="sm:col-span-2">
-          {field('distributor', 'Preferred paint distributor', 'text', 'e.g. Standox, Glasurit, PPG…')}
-        </div>
+        <div className="sm:col-span-2">{field('email', 'Email address', 'email', 'you@example.com')}</div>
+        <div className="sm:col-span-2">{field('distributor', 'Preferred paint distributor', 'text', 'e.g. Standox, Glasurit, PPG…')}</div>
       </div>
 
       {status === 'error' && (
@@ -157,8 +143,10 @@ export default function ContactForm({ squeezePage }: { squeezePage?: string }) {
       </button>
 
       <p className="text-slate-400 text-xs text-center mt-4 leading-relaxed">
-        By submitting this form you agree to us sharing your details with your nearest ULTRASTAT distributor to arrange your demo.{' '}
-        <a href="/privacy" className="underline underline-offset-2 hover:text-slate-600">Privacy Policy</a>
+        By submitting you agree to us sharing your details with your nearest ULTRASTAT distributor.{' '}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-slate-600">
+          Privacy Policy
+        </Link>
       </p>
     </form>
   )

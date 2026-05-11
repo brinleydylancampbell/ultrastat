@@ -3,34 +3,27 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ContactForm from '@/components/ContactForm'
 import DistributorMapClient from '@/components/DistributorMapClient'
-import { distributors, seekingDistributors } from '@/lib/distributors'
+import { sanityFetch } from '@/sanity/lib/client'
+import { distributorsQuery } from '@/sanity/lib/queries'
+import { distributors as fallbackDistributors, seekingDistributors } from '@/lib/distributors'
+import type { Distributor } from '@/lib/distributors'
 
 export const metadata: Metadata = {
   title: 'Become a Distributor',
-  description:
-    'Join the ULTRASTAT distributor network. We\'re looking for partners across the UK and internationally. Proven demo-led sales model, marketing support included.',
+  description: "Join the ULTRASTAT distributor network. Proven demo-led sales model, marketing support included.",
 }
 
 const pitch = [
-  {
-    title: 'Proven UK traction',
-    body: 'Already selling through major UK paint distributors. A track record you can build on.',
-  },
-  {
-    title: 'Demo-led sales model',
-    body: 'The product sells itself in a hands-on demonstration. High conversion, low pressure.',
-  },
-  {
-    title: 'Marketing support',
-    body: 'We provide campaign assets, product training, and ongoing UK HQ support for all distributor partners.',
-  },
-  {
-    title: 'Global opportunity',
-    body: 'We are actively seeking importers and distributors across Europe, North America, Australasia, and beyond.',
-  },
+  { title: 'Proven UK traction', body: 'Already selling through major UK paint distributors. A track record you can build on.' },
+  { title: 'Demo-led sales model', body: 'The product sells itself in a hands-on demonstration. High conversion, low pressure.' },
+  { title: 'Marketing support', body: 'We provide campaign assets, product training, and ongoing UK HQ support for all distributor partners.' },
+  { title: 'Global opportunity', body: 'We are actively seeking importers and distributors across Europe, North America, Australasia, and beyond.' },
 ]
 
-export default function DistributorsPage() {
+export default async function DistributorsPage() {
+  const sanityDistributors = await sanityFetch<Distributor[]>(distributorsQuery)
+  const distributors = sanityDistributors?.length ? sanityDistributors : fallbackDistributors
+
   return (
     <>
       <Nav />
@@ -38,12 +31,9 @@ export default function DistributorsPage() {
         <section className="bg-[#1A1A2E] py-20 lg:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <p className="text-orange-400 font-semibold text-xs tracking-[0.2em] uppercase mb-6">
-                International growth
-              </p>
+              <p className="text-orange-400 font-semibold text-xs tracking-[0.2em] uppercase mb-6">International growth</p>
               <h1 className="text-white font-extrabold text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6">
-                Become an<br />
-                <span className="text-orange-400">ULTRASTAT distributor.</span>
+                Become an<br /><span className="text-orange-400">ULTRASTAT distributor.</span>
               </h1>
               <p className="text-white/75 text-lg leading-relaxed">
                 We&apos;re building a global network of trusted distributors and importers. If you supply bodyshop products and
@@ -76,21 +66,15 @@ export default function DistributorsPage() {
               <p className="text-orange-500 font-semibold text-xs tracking-[0.18em] uppercase mb-3">Our network</p>
               <h2 className="text-slate-900 font-bold text-3xl lg:text-4xl tracking-tight mb-4">Current coverage</h2>
               <p className="text-slate-600 text-base leading-relaxed max-w-xl">
-                Click a pin to see distributor details. White space on the map is opportunity — we&apos;re actively seeking
-                partners in the regions below.
+                Click a pin to see distributor details. White space on the map is opportunity.
               </p>
             </div>
-
             <DistributorMapClient distributors={distributors} />
-
             <div className="mt-12">
               <h3 className="text-slate-900 font-semibold text-base mb-4">Seeking distributors in:</h3>
               <div className="flex flex-wrap gap-2">
                 {seekingDistributors.map((country) => (
-                  <span
-                    key={country}
-                    className="border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium px-3 py-1.5 rounded-full"
-                  >
+                  <span key={country} className="border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium px-3 py-1.5 rounded-full">
                     {country}
                   </span>
                 ))}

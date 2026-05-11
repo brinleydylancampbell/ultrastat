@@ -3,71 +3,41 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 import { SchemaScript } from '@/components/ui/SchemaScript'
+import { sanityFetch } from '@/sanity/lib/client'
+import { articlesQuery } from '@/sanity/lib/queries'
 
 export const metadata: Metadata = {
   title: 'Knowledge Base',
-  description: 'Guides, FAQs, and how-to articles for bodyshop painters — eliminating static, improving paint finishes, and getting the most from ULTRASTAT.',
+  description: 'Guides, FAQs, and how-to articles for bodyshop painters — eliminating static, improving paint finishes.',
 }
+
+interface Article {
+  title: string
+  slug: string
+  summary: string
+  category: string
+}
+
+const fallbackArticles: Article[] = [
+  { slug: 'what-causes-static-in-spray-booth', title: 'What causes static build-up in a spray booth?', summary: "Static builds up through friction during preparation. Here's exactly what causes it and why it ruins paint finishes.", category: 'Paint defects' },
+  { slug: 'how-ultrastat-works', title: 'How does the ULTRASTAT anti-static gun work?', summary: 'A plain-English explanation of ionization and why it eliminates static instantly on any surface.', category: 'Product guide' },
+  { slug: 'reducing-dust-nibs', title: 'How to reduce dust nibs in your spray booth', summary: 'Dust nibs in paint are almost always caused by contamination at the panel level.', category: 'Paint defects' },
+  { slug: 'atex-certification-explained', title: 'What does ATEX certified mean for spray booth equipment?', summary: "ATEX certification explained — why it matters for safety.", category: 'Safety' },
+]
 
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'What causes static build-up in a spray booth?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Static builds up through friction — when panels are sanded, wiped, or moved through the air. In a spray booth, this attracts airborne dust and contamination directly to the surface you\'re about to paint.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'How does the ULTRASTAT gun work?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'ULTRASTAT uses high-output ionization to neutralise the static charge on any surface. Pointed at the panel before painting, it eliminates the charge that attracts dust — leaving a clean, contamination-free surface.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Is ULTRASTAT safe to use in a spray booth?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Yes. ULTRASTAT is ATEX II 2G certified — independently approved for use in explosive atmospheres, including spray booths. It is also CE, UKCA, FCC, and Canada certified.',
-      },
-    },
+    { '@type': 'Question', name: 'What causes static build-up in a spray booth?', acceptedAnswer: { '@type': 'Answer', text: 'Static builds up through friction — when panels are sanded, wiped, or moved through the air.' } },
+    { '@type': 'Question', name: 'Is ULTRASTAT safe to use in a spray booth?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. ULTRASTAT is ATEX II 2G certified — independently approved for use in explosive atmospheres, including spray booths.' } },
   ],
 }
 
-const articles = [
-  {
-    slug: 'what-causes-static-in-spray-booth',
-    title: 'What causes static build-up in a spray booth?',
-    summary: 'Static builds up through friction during preparation. Here\'s exactly what causes it and why it ruins paint finishes.',
-    category: 'Paint defects',
-  },
-  {
-    slug: 'how-ultrastat-works',
-    title: 'How does the ULTRASTAT anti-static gun work?',
-    summary: 'A plain-English explanation of ionization and why it eliminates static instantly on any surface.',
-    category: 'Product guide',
-  },
-  {
-    slug: 'reducing-dust-nibs',
-    title: 'How to reduce dust nibs in your spray booth',
-    summary: 'Dust nibs in paint are almost always caused by contamination at the panel level. Here\'s how to tackle it systematically.',
-    category: 'Paint defects',
-  },
-  {
-    slug: 'atex-certification-explained',
-    title: 'What does ATEX certified mean for spray booth equipment?',
-    summary: 'ATEX certification explained — why it matters for safety and what it means for equipment approval in a spray booth.',
-    category: 'Safety',
-  },
-]
+export default async function KnowledgeBasePage() {
+  const articles = await sanityFetch<Article[]>(articlesQuery)
+  const items = articles?.length ? articles : fallbackArticles
 
-export default function KnowledgeBasePage() {
   return (
     <>
       <SchemaScript data={faqSchema} />
@@ -81,9 +51,8 @@ export default function KnowledgeBasePage() {
               Practical guides for bodyshop painters — eliminating static, improving paint finishes, and getting cleaner results every time.
             </p>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-4xl">
-            {articles.map(({ slug, title, summary, category }) => (
+            {items.map(({ slug, title, summary, category }) => (
               <Link
                 key={slug}
                 href={`/knowledge-base/${slug}`}

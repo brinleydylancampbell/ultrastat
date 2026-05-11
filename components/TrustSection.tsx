@@ -2,20 +2,21 @@
 
 import { useEffect, useRef } from 'react'
 
-const testimonials = [
-  {
-    quote: 'The difference in finish quality was immediate. We now use it on every single panel before painting.',
-    name: 'Vehicle Refinishing Professional',
-    location: 'UK Bodyshop',
-  },
-  {
-    quote: 'Paid for itself within the first week. Fewer reworks, cleaner panels, less wasted paint.',
-    name: 'Bodyshop Owner',
-    location: 'UK Bodyshop',
-  },
+export interface Testimonial {
+  _id: string
+  quote: string
+  name: string
+  role?: string
+  location?: string
+}
+
+const fallback: Testimonial[] = [
+  { _id: '1', quote: 'The difference in finish quality was immediate. We now use it on every single panel before painting.', name: 'Vehicle Refinishing Professional', location: 'UK Bodyshop' },
+  { _id: '2', quote: 'Paid for itself within the first week. Fewer reworks, cleaner panels, less wasted paint.', name: 'Bodyshop Owner', location: 'UK Bodyshop' },
 ]
 
-export default function TrustSection() {
+export default function TrustSection({ testimonials }: { testimonials?: Testimonial[] }) {
+  const items = testimonials?.length ? testimonials : fallback
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -51,7 +52,6 @@ export default function TrustSection() {
               Static electricity pulls dust and contamination onto surfaces during preparation and painting. The ULTRASTAT
               eliminates it before it becomes a problem — cleaner panels, fewer reworks, better results.
             </p>
-
             <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
               <svg className="w-9 h-9 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
@@ -66,16 +66,14 @@ export default function TrustSection() {
           </div>
 
           <div className="space-y-4">
-            {testimonials.map(({ quote, name, location }, i) => (
-              <figure key={i} className="fade-up bg-slate-50 rounded-xl p-6 border border-slate-100">
-                <blockquote className="text-slate-700 text-base leading-relaxed mb-4">
-                  &ldquo;{quote}&rdquo;
-                </blockquote>
+            {items.map(({ _id, quote, name, role, location }) => (
+              <figure key={_id} className="fade-up bg-slate-50 rounded-xl p-6 border border-slate-100">
+                <blockquote className="text-slate-700 text-base leading-relaxed mb-4">&ldquo;{quote}&rdquo;</blockquote>
                 <figcaption className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0" aria-hidden="true" />
                   <div>
                     <p className="text-slate-900 text-sm font-semibold">{name}</p>
-                    <p className="text-slate-500 text-xs">{location}</p>
+                    <p className="text-slate-500 text-xs">{role ?? location}</p>
                   </div>
                 </figcaption>
               </figure>

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/BrinleyCampbellCareS/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python scripts/search.py \"industrial B2B tool professional automotive bodyshop anti-static\" --design-system -p \"ULTRASTAT\" -f markdown)",
+      "Bash(Start-Process *)",
+      "Bash(node *)",
+      "Bash(gh auth *)",
+      "PowerShell(gh auth *)",
+      "PowerShell(git config *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "Bash(npm uninstall *)",
+      "Bash(npm install *)",
+      "Bash(mkdir -p \"C:/Users/BrinleyCampbellCareS/OneDrive - Wealden Rehab/Documents/appwebdev/ultrastat/app/studio/[[...tool]]\")",
+      "Bash(mkdir -p \"C:/Users/BrinleyCampbellCareS/OneDrive - Wealden Rehab/Documents/appwebdev/ultrastat/app/knowledge-base/[slug]\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

@@ -9,13 +9,15 @@ import ROICalculator from '@/components/ROICalculator'
 import CTABanner from '@/components/CTABanner'
 import Footer from '@/components/Footer'
 import { SchemaScript } from '@/components/ui/SchemaScript'
+import { sanityFetch } from '@/sanity/lib/client'
+import { testimonialsQuery } from '@/sanity/lib/queries'
+import type { Testimonial } from '@/components/TrustSection'
 
 const productSchema = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: 'ULTRASTAT Anti-Static Gun',
-  description:
-    'Cordless, lightweight anti-static gun for bodyshop painters. ATEX certified for safe use in spray booths. Eliminates static for flawless paint finishes.',
+  description: 'Cordless, lightweight anti-static gun for bodyshop painters. ATEX certified for safe use in spray booths.',
   brand: { '@type': 'Brand', name: 'ULTRASTAT' },
   manufacturer: { '@type': 'Organization', name: 'Lean Air' },
 }
@@ -28,7 +30,9 @@ const orgSchema = {
   sameAs: ['https://www.instagram.com/ultrastatgun/'],
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const testimonials = await sanityFetch<Testimonial[]>(testimonialsQuery)
+
   return (
     <>
       <SchemaScript data={productSchema} />
@@ -39,7 +43,7 @@ export default function HomePage() {
         <FeatureStrip />
         <CredentialsPanel />
         <HowItWorks />
-        <TrustSection />
+        <TrustSection testimonials={testimonials ?? undefined} />
         <InstagramSection />
         <ROICalculator />
         <CTABanner />
